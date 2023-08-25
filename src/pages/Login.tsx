@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Flex,
   Box,
@@ -19,6 +19,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [user_id, setUser_id] = useState(""); // Initialize with an empty string
   const [loginData, setLoginData] = useState({
     
     email: '',
@@ -53,12 +54,16 @@ const Login = () => {
 
 .then((data) => {
   if (data) {
-      setToken(data.token); // Assegna il token qui
-      sessionStorage.setItem('token', data.token);
-      setIsLoading(true);
-      navigate('/');
+    setUser_id(data.user_id);
+    setToken(data.token); // Assegna il token qui
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.setItem('user_id', data.user_id);
+    console.log('user_id from data:', data.user_id);
+    console.log(data + 'ciao react') // Log user_id from response data
+    setIsLoading(true);
+    navigate('/');
   } else {
-      setIsLoading(false);
+    setIsLoading(false);
   }
 })
 
@@ -68,20 +73,23 @@ const Login = () => {
       });
   };
 
-  fetch('https://magazzino-api.v-net.it/api/admin', {
-  method: 'GET',
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-})
-  .then((res) => res.json())
-  .then((data) => {
-    console.log(data);
-  })
-  .catch((error) => {
-    console.log(error);
-  });
-
+  useEffect(() => {
+    if (token) {
+      fetch('https://magazzino-api.v-net.it/api/admin', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }, [token]);
 
   return (
     

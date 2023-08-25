@@ -9,53 +9,53 @@ const Richieste = () => {
     const [sortOrder, setSortOrder] = useState("asc");
 
 
-    const fetchRequests = async () => {
-        try {
-            const token = sessionStorage.getItem("token");
-            if (!token) {
-                console.error("Token non presente.");
-                return;
-            }
-    
-            const response = await fetch("https://magazzino-api.v-net.it/api/admin/request", {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Accept": "application/json",
-                },
-            });
-    
-            if (!response.ok) {
-                throw new Error(`Errore nella richiesta delle richieste degli utenti: ${response.statusText}`);
-            }
-    
-            const data = await response.json();
-    
-            // Apply filters
-            let filteredRequests = data.requests;
-            if (userFilter) {
-                filteredRequests = filteredRequests.filter(request => request.user_id.toString().includes(userFilter));
-            }
-            if (dateFilter) {
-                filteredRequests = filteredRequests.filter(request => request.created_at.includes(dateFilter));
-            }
-    
-            // Sort filtered requests
-            if (sortOrder) {
-                filteredRequests.sort((a, b) => {
-                    if (sortOrder === "asc") {
-                        return new Date(a.created_at) - new Date(b.created_at);
-                    } else {
-                        return new Date(b.created_at) - new Date(a.created_at);
-                    }
-                });
-            }
-    
-            setRequests(filteredRequests);
-        } catch (error) {
-            console.error("Errore durante il recupero delle richieste:", error);
+   const fetchRequests = async () => {
+    try {
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+            console.error("Token non presente.");
+            return;
         }
-    };
+
+        const response = await fetch("https://magazzino-api.v-net.it/api/admin/request", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Accept": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Errore nella richiesta delle richieste degli utenti: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Apply filters
+        let filteredRequests = data.requests;
+        if (userFilter) {
+            filteredRequests = filteredRequests.filter(request => request.user_id.toString().includes(userFilter));
+        }
+        if (dateFilter) {
+            filteredRequests = filteredRequests.filter(request => request.created_at.includes(dateFilter));
+        }
+
+        // Sort filtered requests
+        if (sortOrder) {
+            filteredRequests.sort((a, b) => {
+                if (sortOrder === "asc") {
+                    return new Date(a.created_at) - new Date(b.created_at);
+                } else {
+                    return new Date(b.created_at) - new Date(a.created_at);
+                }
+            });
+        }
+
+        setRequests(filteredRequests);
+    } catch (error) {
+        console.error("Errore durante il recupero delle richieste:", error);
+    }
+};
 
 
     useEffect(() => {
@@ -232,6 +232,7 @@ const Richieste = () => {
             <table className="table table-striped table-bordered table-hover">
                 <thead>
                     <tr>
+                    <th>Data Richiesta</th>
                         <th>ID Richiesta</th>
                         <th>ID Utente</th>
                         <th>ID Articolo</th>
@@ -249,6 +250,7 @@ const Richieste = () => {
                     ) : (
                         requests.map((request) => (
                             <tr key={request.id}>
+                                <td>{ new Date(request.created_at).toLocaleDateString()}</td>
                                 <td>{request.id}</td>
                                 <td>{request.user_id}</td>
                                 <td>{request.article_id}</td>

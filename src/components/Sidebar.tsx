@@ -141,7 +141,7 @@ const NavItem = ({ icon, pageLink, children, ...rest }: NavItemProps) => {
 
 const MobileNav = ({user, onOpen, ...rest }: MobileProps) => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [user_id, setUser_id] = useState("");
 
  
   const handleLogout = () => {
@@ -161,7 +161,7 @@ const MobileNav = ({user, onOpen, ...rest }: MobileProps) => {
        // window.location.reload();
         navigate("/login");
         localStorage.setUsername(username);
-        setUsername(data);
+        setUser_id(data);
       })
       // .catch((e) => {
       //   alert("Spiacente, non è presente alcun dato");

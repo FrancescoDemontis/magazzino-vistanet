@@ -19,20 +19,11 @@ function ArticoliLista() {
   const [orderBy, setOrderBy] = useState('');
   const [orderDirection, setOrderDirection] = useState('');
   const [categories, setCategories] = useState('');
-
-  const [user_id, setUser_id] = useState("");
   const { id } = useParams();
-
-  useEffect(() => {
-    const storedUserId = sessionStorage.getItem("user_id");
-    if (storedUserId == null) {
-      const newUserId = user_id; // Sostituisci con l'effettivo ID dell'utente
-      sessionStorage.setItem("user_id", newUserId);
-      setUser_id(newUserId);
-    } else {
-      setUser_id(storedUserId);
-    }
-  }, []);
+  const [token, setToken] = useState(""); // Initialize with an empty string
+  const [user_id, setUser_id] = useState(""); // Initialize with an empty string
+  const userId = localStorage.getItem('userID'); // Use the actual variable
+  
 
   const fetchData = async () => {
     try {
@@ -93,47 +84,37 @@ function ArticoliLista() {
     }
 }
 
-const handleRequest = async (articleId, price) => {
-  console.log("Article ID:", articleId);
-  console.log("Price:", price);
-
-  if (!price) {
-    console.error('Il prezzo è richiesto.');
-    return;
-  }
-
+const handleRequest = async (article_id, price) => {
   try {
     const token = sessionStorage.getItem("token");
-    const storedUserId = sessionStorage.getItem("user_id");
+    const userId = sessionStorage.getItem("user_id");
 
-    console.log("Stored User ID:", storedUserId);
-
-    const response = await fetch("https://magazzino-api.v-net.it/api/article/request", {
-      method: "POST",
+    const response = await fetch(`https://magazzino-api.v-net.it/api/article/request`, {
+      method: 'POST',
       headers: {
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-        user_id: storedUserId,
-        article_id: articleId,
-        price: price,
-        verified: false,
+        article_id,
+        price,
+        user_id: userId, // Use the user ID from sessionStorage
+        verified: false, // Set to false by default, as per your code
       }),
     });
-    if (response.status !== 200) {
-      const data = await response.json();
-      console.error("Error:", data);
+
+    if (response.ok) {
+      console.log('Prodotto richiesto con successo! Sarai informato a breve.');
     } else {
-      
-      console.error('Errore durante la richiesta dell\'articolo:', response.statusText);
+      const errorData = await response.json();
+      console.error('Errore durante l\'invio della richiesta:', errorData);
+      console.log('Errore durante l\'invio della richiesta. Riprova più tardi.');
     }
   } catch (error) {
-    console.error("Errore durante la richiesta dell'articolo:", error);
+    console.error('Errore di connessione:', error);
+    console.log('Errore di connessione. Verifica la tua connessione internet.');
   }
 };
-
 
 
 const fetchProductsByCategory = async (category) => {
@@ -354,7 +335,7 @@ const sortProducts = async (orderBy, orderDirection) => {
               History Richieste Utenti
             </button>
           </a>
-          <table className="table table-dark table-bordered mt-5 bg-dark">
+          <table className="table table-dark table-bordered mt-5 bg-dark table table-striped table-bordered table-hover">
             <thead>
               <tr>
                 <th scope="col">Nr.</th>
