@@ -18,13 +18,29 @@ function ArticoliLista() {
   const [searchTerm, setSearchTerm] = useState('');
   const [orderBy, setOrderBy] = useState('');
   const [orderDirection, setOrderDirection] = useState('');
-  const [categories, setCategories] = useState('');
+  //const [categories, setCategories] = useState('');
+  const [categories, setCategories] = useState([]);
+
   const { id } = useParams();
   const [token, setToken] = useState(""); // Initialize with an empty string
   const [user_id, setUser_id] = useState(""); // Initialize with an empty string
   const userId = localStorage.getItem('userID'); // Use the actual variable
   
-
+  useEffect(() => {
+    const storedUserId = sessionStorage.getItem("user_id");
+    if (storedUserId == null) {
+      // Extract user ID from token
+      const token = sessionStorage.getItem("token");
+      const userIdFromToken = token.split('|')[0]; // Assuming the token is in the format "userID|actualToken"
+  
+      sessionStorage.setItem("user_id", userIdFromToken);
+      setUser_id(userIdFromToken);
+    } else {
+      setUser_id(storedUserId);
+    }
+  }, []);
+  
+  
   const fetchData = async () => {
     try {
       const response = await fetch(`https://magazzino-api.v-net.it/api/article`);
@@ -64,30 +80,36 @@ function ArticoliLista() {
   
   const handleDelete = async (id) => {
     try {
-        const response = await fetch(`https://magazzino-api.v-net.it/api/articledelete/${id}`, {
-            method: "DELETE",
-            headers: {
-                "Accept": "application/json",
-            },
-        });
-
-        if (response.ok) {
-            // Rimuovi l'articolo dalla lista dopo l'eliminazione
-            const newArticles = articles.filter((item) => item.id !== id);
-            setArticles(newArticles);
-        } else {
-            const data = await response.json();
-            console.error("Error deleting article:", data.message);
-        }
+      const token = sessionStorage.getItem("token"); // Recupera il token di autenticazione
+  
+      const response = await fetch(`https://magazzino-api.v-net.it/api/articledelete/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`, // Includi il token nell'header
+        },
+      });
+  
+      if (response.ok) {
+        // Rimuovi l'articolo dalla lista dopo l'eliminazione
+        const newArticles = articles.filter((item) => item.id !== id);
+        setArticles(newArticles);
+      } else {
+        const data = await response.json();
+        console.error("Errore nell'eliminazione dell'articolo:", data.message);
+      }
     } catch (error) {
-        console.error("Error deleting article:", error);
+      console.error("Errore nell'eliminazione dell'articolo:", error);
     }
-}
+  }
+  
+
+  
 
 const handleRequest = async (article_id, price) => {
   try {
     const token = sessionStorage.getItem("token");
-    const userId = sessionStorage.getItem("user_id");
+    const userId = sessionStorage.setItem("user_id", user_id);
 
     const response = await fetch(`https://magazzino-api.v-net.it/api/article/request`, {
       method: 'POST',
@@ -264,8 +286,10 @@ const sortProducts = async (orderBy, orderDirection) => {
   
   useEffect(() => {
     fetchCategories();
-    fetchData(); 
+    fetchData();
+    console.log(categories); // Aggiungi questa linea
   }, [id]);
+  
   
 
 
@@ -278,15 +302,13 @@ const sortProducts = async (orderBy, orderDirection) => {
             <label class="m-3 p-2">
               Category:
               <select class="form-select" value={selectedCategory} onChange={handleCategoryChange}>
-                <option value="all">all</option>
-                <option value="cancelleria">cancelleria</option>
-                <option value="food">food</option>
-                <option value="tech">tech</option>
-                <option value="system">system</option>
-                <option value="ice">ice</option>
-                <option value="alimentari">alimentari</option>
-                <option value="elettronica">elettronica</option>
-              </select>
+            <option value="all">all</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.name}>
+                {category.name}
+              </option>
+            ))}
+          </select>
             </label>
             <label>
             Search by name:
@@ -367,25 +389,26 @@ const sortProducts = async (orderBy, orderDirection) => {
                   </td>
                   <td>${article.price}</td>
                   <td style={{ backgroundColor: "", color: "" }}>
-                    {categories.length > 0 && article.category && (
-                      categories.map(category => {
-                        if (category === article.category) {
+                  {categories.length > 0 && article.category && (
+                      categories.map((category) => {
+                        if (category.name === article.category) { // Confronta usando il nome della categoria
                           return (
                             <div
-                              key={category}
+                              key={category.id} // Usa l'ID come chiave univoca
                               style={{
                                 backgroundColor: category.background_color,
-                                color: category.text_color
+                                color: category.text_color,
                               }}
                             >
                               {category.name}
-                            
                             </div>
                           );
                         }
                         return null;
                       })
                     )}
+
+                    
                   </td>
                   {userRole === 'admin' && (
                     <td>

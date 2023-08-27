@@ -84,6 +84,7 @@ const Login = () => {
         .then((res) => res.json())
         .then((data) => {
           console.log(data);
+          console.log(token)
         })
         .catch((error) => {
           console.log(error);

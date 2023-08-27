@@ -32,9 +32,9 @@ const Richieste = () => {
         const data = await response.json();
 
         // Apply filters
-        let filteredRequests = data.requests;
+        let filteredRequests = data;
         if (userFilter) {
-            filteredRequests = filteredRequests.filter(request => request.user_id.toString().includes(userFilter));
+            filteredRequests = filteredRequests.filter(request => request.name.toString().includes(userFilter));
         }
         if (dateFilter) {
             filteredRequests = filteredRequests.filter(request => request.created_at.includes(dateFilter));
@@ -57,13 +57,13 @@ const Richieste = () => {
     }
 };
 
-
+// fetchRequest();
+// fetchSortedRequests();
+// fetchUserFilteredRequests();
     useEffect(() => {
         fetchRequests();
-        fetchRequest();
-        fetchSortedRequests();
-        fetchUserFilteredRequests();
-    }, [userFilter, dateFilter, sortOrder]);
+    
+    }, []);
 
     const fetchRequest = async () => {
         try {
@@ -108,18 +108,18 @@ const Richieste = () => {
                     orderDirection: sortOrder,
                 }),
             });
-    
+
             if (!response.ok) {
                 throw new Error(`Errore nella richiesta delle richieste ordinate: ${response.statusText}`);
             }
-    
+
             const data = await response.json();
             setRequests(data.requests);
         } catch (error) {
             console.error("Errore durante il recupero delle richieste ordinate:", error);
         }
     };
-    
+
 
     const fetchUserFilteredRequests = async () => {
         try {
@@ -141,7 +141,7 @@ const Richieste = () => {
             }
 
             const data = await response.json();
-            setRequests(data.requests);
+            setRequests(data);
         } catch (error) {
             console.error("Errore durante il recupero delle richieste filtrate per utente:", error);
         }
@@ -152,10 +152,10 @@ const Richieste = () => {
         setSortOrder(newSortOrder);
     };
 
-    const handleUserFilterChange = (event) => {
-        const newUserFilter = event.target.value;
-        setUserFilter(newUserFilter);
-    };
+    // const handleUserFilterChange = (event) => {
+    //     const newUserFilter = event.target.value;
+    //     setUserFilter(newUserFilter);
+    // };
 
     const handleDateFilterChange = (event) => {
         const newDateFilter = event.target.value;
@@ -214,7 +214,7 @@ const Richieste = () => {
             <form>
                 <div className="mb-3">
                     <label className="form-label">Filtro utente</label>
-                    <input type="text" className="form-control" placeholder="Inserisci ID Utente" value={userFilter} onChange={handleUserFilterChange} />
+                    <input type="text" className="form-control" placeholder="Inserisci  Utente" value={userFilter} onChange={(e) => setUserFilter(e.target.value)} />
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Filtro data</label>
@@ -234,7 +234,7 @@ const Richieste = () => {
                     <tr>
                     <th>Data Richiesta</th>
                         <th>ID Richiesta</th>
-                        <th>ID Utente</th>
+                        <th>Utente</th>
                         <th>ID Articolo</th>
                         <th>Price</th>
                         <th>Verifica</th>
@@ -252,7 +252,7 @@ const Richieste = () => {
                             <tr key={request.id}>
                                 <td>{ new Date(request.created_at).toLocaleDateString()}</td>
                                 <td>{request.id}</td>
-                                <td>{request.user_id}</td>
+                                <td>{request.name}</td>
                                 <td>{request.article_id}</td>
                                 <td>{request.price}</td>
                                 <td>

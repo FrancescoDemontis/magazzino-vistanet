@@ -7,33 +7,34 @@ const OrderHistory = () => {
     const [loading, setLoading] = useState(true);
     const [notification, setNotification] = useState('');
     const [userRole, setUserRole] = useState('');
+    const [user, setUser] = useState({});
 
-    useEffect(() => {
-        async function fetchUserRole() {
-          try {
-            const token = sessionStorage.getItem("token");
-            const response = await fetch(`https://magazzino-api.v-net.it/api/user-role`, {
-              method: 'GET',
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + token,
-              },
-            });
-      
-            if (response.ok) {
-              const data = await response.json();
-              setUserRole(data.role); // Imposta il ruolo dell'utente
-            } else {
-              console.error('Errore nel recupero del ruolo dell\'utente');
-            }
-          } catch (error) {
-            console.error('Errore di connessione:', error);
-          }
-        }
-      
-        fetchUserRole();
-      }, []);
-      
+ useEffect(() => {
+  async function fetchUserRole() {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(`https://magazzino-api.v-net.it/api/user-role`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserRole(data.role);
+      } else {
+        console.error('Errore nel recupero del ruolo dell\'utente');
+      }
+    } catch (error) {
+      console.error('Errore di connessione:', error);
+    }
+  }
+
+  fetchUserRole();
+}, []);
+
   
     useEffect(() => {
       async function fetchOrders() {
@@ -50,6 +51,7 @@ const OrderHistory = () => {
           if (response.ok) {
             const data = await response.json();
             setOrders(data);
+            console.log(data)
           } else {
             console.error('Errore nel recupero degli ordini');
           }
@@ -64,6 +66,7 @@ const OrderHistory = () => {
     }, []);
   
     const handleAcceptRequest = async (orderId) => {
+      console.log(orderId)
       try {
         const token = sessionStorage.getItem("token");
         const response = await fetch(`https://magazzino-api.v-net.it/api/product/request/${orderId}/accept`, {
@@ -88,6 +91,7 @@ const OrderHistory = () => {
     };
     
     const handleRejectRequest = async (orderId) => {
+      console.log(orderId)
       try {
         const token = sessionStorage.getItem("token");
         const response = await fetch(`https://magazzino-api.v-net.it/api/product/request/${orderId}/reject`, {
@@ -163,8 +167,9 @@ const OrderHistory = () => {
                         </thead>
                         <tbody>
                             {orders.map((order) => (
+                             
                                 <tr key={order.id}>
-                                    <td>{order.id}</td>
+                                   <td>{order.name}</td>
                                     <td>
                                         <a href={order.product_link} target="_blank" >
                                             {order.title} {/* Utilizza order.product_title invece di order.product_link */}
